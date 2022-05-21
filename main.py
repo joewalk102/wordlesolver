@@ -7,8 +7,12 @@ def parse_input(raw_input):
     positioned_letters = ""
     for letter in raw_input.split(" "):
         if "?" in letter:
-            unknown_letters.append(str(letter).strip("?"))
-            positioned_letters += "."
+            stripped_letter = str(letter).strip("?")
+            if stripped_letter:
+                unknown_letters.append()
+                positioned_letters += "."
+            else:
+                positioned_letters += f"[^{stripped_letter}]"
         else:
             positioned_letters += letter
     return positioned_letters, unknown_letters
@@ -17,7 +21,8 @@ def parse_input(raw_input):
 def main():
     with open("words.txt", "r") as file:
         words = file.read()
-    while True:
+    go_again = True
+    while go_again:
         raw_text = input("whatcha got? -> ")
         pattern, unknown = parse_input(raw_text)
         raw_text = input("what's not there? -> ")
@@ -29,6 +34,7 @@ def main():
                 if all([letter in m for letter in unknown]) and not any([letter in m for letter in raw_text]):
                     final_matches.append(m)
         pprint(final_matches)
+        go_again = input("go again? (y/n) -> ").lower().strip() == "y"
 
 
 if __name__ == '__main__':
