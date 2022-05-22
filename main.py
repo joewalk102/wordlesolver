@@ -9,10 +9,10 @@ def parse_input(raw_input):
         if "?" in letter:
             stripped_letter = str(letter).strip("?")
             if stripped_letter:
-                unknown_letters.append()
-                positioned_letters += "."
-            else:
+                unknown_letters.append(stripped_letter)
                 positioned_letters += f"[^{stripped_letter}]"
+            else:
+                positioned_letters += "."
         else:
             positioned_letters += letter
     return positioned_letters, unknown_letters
