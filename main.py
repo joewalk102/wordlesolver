@@ -1,41 +1,61 @@
 import re
 from pprint import pprint
 
+class Solver:
+    def __init__(self, words):
+        self.words = words
+        self.negative_letters = set()
+        self.required_letters = list()
+        self.not_at_position = [""] * 5
+        self.pattern = ""
 
-def parse_input(raw_input):
-    unknown_letters = list()
-    positioned_letters = ""
-    for letter in raw_input.split(" "):
-        if "?" in letter:
-            stripped_letter = str(letter).strip("?")
-            if stripped_letter:
-                unknown_letters.append(stripped_letter)
-                positioned_letters += f"[^{stripped_letter}]"
+    def parse_input(self, raw_input):
+        self.pattern = ""
+        for i, letter in enumerate(raw_input.split(" ")):
+            if "?" in letter:
+                stripped_letter = str(letter).strip("?")
+                if stripped_letter:
+                    self.not_at_position[i] += stripped_letter
+                    self.required_letters.append(stripped_letter)
+                    self.pattern += f"[^{self.not_at_position[i]}]"
+                else:
+                    self.pattern += "."
             else:
-                positioned_letters += "."
-        else:
-            positioned_letters += letter
-    return positioned_letters, unknown_letters
+                self.pattern += letter
+
+    def add_to_negative(self, new_negatives):
+        self.negative_letters = self.negative_letters | set(new_negatives)
+
+    def find_words(self):
+        if not self.pattern:
+            return self.words.splitlines()
+        matches = re.findall(f"^{self.pattern}$", self.words, flags=re.M)
+        if self.required_letters or self.negative_letters:
+            final_matches = list()
+            for m in matches:
+                if self.required_letters and not all([letter in m for letter in self.required_letters]):
+                    continue
+                if self.negative_letters and any([letter in m for letter in self.negative_letters]):
+                    continue
+                final_matches.append(m)
+            return final_matches
+        return matches
 
 
 def main():
     with open("words.txt", "r") as file:
         words = file.read()
     go_again = True
-    negative_letters = ""
+    solver = Solver(words=words)
     while go_again:
         raw_text = input("whatcha got? -> ")
-        pattern, unknown = parse_input(raw_text)
-        print("Current omitted letters: " + negative_letters)
-        negative_letters += input("what's not there? -> ")
-        pattern = f"^{pattern}$"
-        matches = re.findall(pattern, words, re.M)
-        final_matches = list()
-        if unknown:
-            for m in matches:
-                if all([letter in m for letter in unknown]) and not any([letter in m for letter in negative_letters]):
-                    final_matches.append(m)
-        pprint(final_matches)
+        solver.parse_input(raw_text)
+
+        print("Current omitted letters: " + " ".join(solver.negative_letters))
+        solver.add_to_negative(input("what's not there? -> "))
+
+        pprint(solver.find_words())
+
         go_again = input("go again? (y/n) -> ").lower().strip() == "y"
 
 
