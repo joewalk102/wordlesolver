@@ -62,7 +62,7 @@ class TestParseInput:
         solver = Solver("foo\nbar")
         solver.parse_input("?a ? ?")
         assert solver.pattern == "[^a].."
-        assert solver.required_letters == ["a"]
+        assert solver.required_letters == {"a"}
         assert solver.not_at_position == ["a", "", "", "", ""]
 
     def test_input_with_all_known(self):
@@ -73,7 +73,7 @@ class TestParseInput:
     def test_required_and_nap_is_retained(self):
         solver = Solver("foo\nbar\nbaz")
         solver.parse_input("?a ? ?")
-        assert solver.required_letters == ["a"]
+        assert solver.required_letters == {"a"}
         solver.parse_input("? ?z ?")
-        assert solver.required_letters == ["a", "z"]
+        assert solver.required_letters == {"a", "z"}
         assert solver.not_at_position == ["a", "z", "", "", ""]
