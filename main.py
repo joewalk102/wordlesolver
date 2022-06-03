@@ -1,5 +1,14 @@
 import re
-from pprint import pprint
+
+
+def print_grid(words: list):
+    cursor = 0
+    print("-" * 37 + "\n")
+    while cursor < len(words):
+        print("\t".join(words[cursor : cursor + 5]), end="\n\n")
+        cursor += 5
+    print("-" * 37)
+
 
 class Solver:
     def __init__(self, words):
@@ -33,9 +42,13 @@ class Solver:
         if self.required_letters or self.negative_letters:
             final_matches = list()
             for m in matches:
-                if self.required_letters and not all([letter in m for letter in self.required_letters]):
+                if self.required_letters and not all(
+                    [letter in m for letter in self.required_letters]
+                ):
                     continue
-                if self.negative_letters and any([letter in m for letter in self.negative_letters]):
+                if self.negative_letters and any(
+                    [letter in m for letter in self.negative_letters]
+                ):
                     continue
                 final_matches.append(m)
             return final_matches
@@ -54,13 +67,14 @@ def main():
         print("Current omitted letters: " + " ".join(solver.negative_letters))
         solver.add_to_negative(input("what's not there? -> "))
 
-        pprint(solver.find_words())
+        print_grid(solver.find_words()[:40])
 
         go_again = input("go again? (y/n) -> ").lower().strip() == "y"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
+        print("\n--END OF LINE--")
     except KeyboardInterrupt:
         pass
