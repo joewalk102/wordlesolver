@@ -76,4 +76,4 @@ class TestParseInput:
         assert solver.required_letters == ["a"]
         solver.parse_input("? ?z ?")
         assert solver.required_letters == ["a", "z"]
-        assert solver.not_at_position == ['a', 'z', '', '', '']
+        assert solver.not_at_position == ["a", "z", "", "", ""]
