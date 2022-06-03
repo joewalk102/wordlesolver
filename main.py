@@ -5,7 +5,7 @@ class Solver:
     def __init__(self, words):
         self.words = words
         self.negative_letters = set()
-        self.required_letters = list()
+        self.required_letters = set()
         self.not_at_position = [""] * 5
         self.pattern = ""
 
@@ -16,14 +16,16 @@ class Solver:
                 stripped_letter = str(letter).strip("?")
                 if stripped_letter:
                     self.not_at_position[i] += stripped_letter
-                    self.required_letters.append(stripped_letter)
+                    self.required_letters.add(stripped_letter)
                     self.pattern += f"[^{self.not_at_position[i]}]"
                 else:
                     self.pattern += "."
             else:
                 self.pattern += letter
+                self.required_letters.add(letter)
 
     def add_to_negative(self, new_negatives):
+        new_negatives = {neg for neg in new_negatives if neg not in self.required_letters}
         self.negative_letters = self.negative_letters | set(new_negatives)
 
     def find_words(self):
