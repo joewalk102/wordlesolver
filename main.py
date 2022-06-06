@@ -19,28 +19,38 @@ class Solver:
         self.negative_letters = set()
         self.required_letters = set()
         self.not_at_position = [""] * 5
+        self.at_position = [""] * 5
         self.pattern = ""
+        self.possible_negatives = ""
 
-    def parse_input(self, raw_input):
-        self.pattern = ""
-        for i, letter in enumerate(raw_input.split(" ")):
-            if "?" in letter:
-                stripped_letter = str(letter).strip("?")
-                if stripped_letter:
-                    self.not_at_position[i] += stripped_letter
-                    self.required_letters.add(stripped_letter)
-                    self.pattern += f"[^{self.not_at_position[i]}]"
-                else:
-                    self.pattern += "."
-            else:
-                self.pattern += letter
-                self.required_letters.add(letter)
+        self.color_router = {
+            "g": self._process_green,
+            "y": self._process_yellow,
+            "b": self._process_black,
+        }
 
-    def add_to_negative(self, new_negatives):
+    def _process_green(self, location, letter):
+        self.pattern += letter
+        if self.at_position[location]:
+            return
+        self.required_letters.add(letter)
+        self.at_position[location] = letter
+
+    def _process_yellow(self, location, letter):
+        self.not_at_position[location] += letter
+        self.required_letters.add(letter)
+        self.pattern += f"[^{self.not_at_position[location]}]"
+
+    def _process_black(self, location, letter):
+        self.pattern += "."
+        self.possible_negatives += letter
+
+    def _reconcile_negatives(self):
         new_negatives = {
-            neg for neg in new_negatives if neg not in self.required_letters
+            neg for neg in self.possible_negatives if neg not in self.required_letters
         }
         self.negative_letters = self.negative_letters | new_negatives
+        self.possible_negatives = ""
 
     def _filter_for_required_and_negative(self, matches):
         final_matches = list()
@@ -57,6 +67,16 @@ class Solver:
                 final_matches.append(m)
         return final_matches or matches
 
+    def parse_input(self, raw_input, colors):
+        self.pattern = ""
+        for i in range(len(raw_input)):
+            if colors[i] in self.color_router:
+                self.color_router[colors[i]](i, raw_input[i])
+                self._reconcile_negatives()
+            else:
+                print("Unexpected input in colors. Please try again.")
+                break
+
     def find_words(self):
         if not self.pattern:
             return self.words.splitlines()
@@ -70,16 +90,9 @@ def main():
     go_again = True
     solver = Solver(words=words)
     while go_again:
-        raw_text = input("whatcha got? -> ")
-        # Expected pattern (separated by spaces):
-        # "?" for unknown letter (black)
-        # "?l" for unknown position (yellow)
-        # "l" for known letter and position (green)
-        solver.parse_input(raw_text)
-
-        print("Current omitted letters: " + " ".join(solver.negative_letters))
-        # Expected: All black letters with no spaces.
-        solver.add_to_negative(input("what's not there? -> "))
+        raw_text = input("what's your guess? -> ")
+        colors = input("what were the colors? -> ").strip().lower()
+        solver.parse_input(raw_text, colors)
 
         print_grid(solver.find_words()[:40])
 
