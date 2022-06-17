@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 
 def print_grid(words: list, width=5, height=8):
@@ -84,17 +85,65 @@ class Solver:
         return self._filter_for_required_and_negative(matches)
 
 
+    def get_common_letters(self, words):
+        letters = defaultdict(lambda : 0)
+        # Get the occurrence of all letters in all words in the word list
+        # and record them in a dict where the letter is the key and the
+        # occurrence is the val.
+        for word in words:
+            for letter in word:
+                if letter not in self.negative_letters:
+                    letters[letter] += 1
+        return letters
+
+    def get_suggested_words(self, words, common_letters):
+        # Sort the letters by highest occurrence.
+        top_common = set(
+            [k for k, v in sorted(common_letters.items(), key=lambda item: item[1], reverse=True)][:6]
+        )
+        print(f"top_common: {top_common}")
+        word_freq = dict()
+        # Find the number of letters in each word that matches
+        # the top common occurrences and put into a dictionary with
+        # the word as the key and the number of letters that occur
+        # in top common in the value.
+        for word in words:
+            num_common_letters = len([letter for letter in word if letter in top_common])
+            num_unique_letters = len(set(word))
+            word_freq[word] = min([num_common_letters, num_unique_letters])
+        # Sort the words by the highest number of letters in common.
+        return [k for k, v in sorted(word_freq.items(), key=lambda item: item[1], reverse=True)]
+
+
+def _input_correct_length(prompt, input_length):
+    """
+    loop to ensure the length of the guess is correct.
+    """
+    while True:
+        value = input(prompt)
+        if len(value) == input_length:
+            return value
+
+
 def main():
     with open("words.txt", "r") as file:
         words = file.read()
     go_again = True
     solver = Solver(words=words)
     while go_again:
-        raw_text = input("what's your guess? -> ")
-        colors = input("what were the colors? -> ").strip().lower()
+        raw_text = _input_correct_length("what's your guess? -> ", 5)
+        colors = _input_correct_length("what were the colors? -> ", 5).strip().lower()
         solver.parse_input(raw_text, colors)
+        words = solver.find_words()
 
-        print_grid(solver.find_words()[:40])
+        print("Suggestions by word frequency:")
+        print_grid(words[:40])
+
+        common_letters = solver.get_common_letters(words)
+        suggested_words = solver.get_suggested_words(words, common_letters)
+
+        print("Suggestions by letter frequency:")
+        print_grid(suggested_words)
 
         go_again = input("go again? (y/n) -> ").lower().strip() == "y"
 
