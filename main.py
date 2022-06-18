@@ -128,9 +128,8 @@ def _input_correct_length(prompt, input_length):
 def main():
     with open("words.txt", "r") as file:
         words = file.read()
-    go_again = True
     solver = Solver(words=words)
-    while go_again:
+    while True:
         raw_text = _input_correct_length("what's your guess? -> ", 5)
         colors = _input_correct_length("what were the colors? -> ", 5).strip().lower()
         solver.parse_input(raw_text, colors)
@@ -144,8 +143,6 @@ def main():
 
         print("Suggestions by letter frequency:")
         print_grid(suggested_words)
-
-        go_again = input("go again? (y/n) -> ").lower().strip() == "y"
 
 
 if __name__ == "__main__":
